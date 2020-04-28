@@ -12,6 +12,7 @@ namespace build
         private const string ArtifactsDir = "artifacts";
         private const string BuildHalDocs = "build-hal-docs";
         private const string Build = "build";
+        private const string Clean = "clean";
         private const string Test = "test";
         private const string Pack = "pack";
         private const string Publish = "publish";
@@ -19,6 +20,30 @@ namespace build
 
         private static void Main(string[] args)
         {
+            Target(Clean,
+                () =>
+                {
+                    if (Directory.Exists(ArtifactsDir))
+                    {
+                        var directoriesToDelete = Directory.GetDirectories(ArtifactsDir);
+                        foreach (var directory in directoriesToDelete)
+                        {
+                            Console.WriteLine($"Deleting directory {directory}");
+                            Directory.Delete(directory, true);
+                        }
+
+                        var filesToDelete = Directory
+                            .GetFiles(ArtifactsDir, "*.*", SearchOption.AllDirectories)
+                            .Where(f => !f.EndsWith(".gitignore"));
+                        foreach (var file in filesToDelete)
+                        {
+                            Console.WriteLine($"Deleting file {file}");
+                            File.SetAttributes(file, FileAttributes.Normal);
+                            File.Delete(file);
+                        }
+                    }
+                });
+
             Target(Build, () => Run("dotnet", "build --configuration=Release"));
 
             Target(
@@ -48,7 +73,7 @@ namespace build
 
             Target(
                 Pack,
-                DependsOn(Build),
+                DependsOn(Clean, Build),
                 ForEach(
                     "SqlStreamStore",
                     "SqlStreamStore.MsSql",
@@ -56,26 +81,28 @@ namespace build
                     "SqlStreamStore.Postgres",
                     "SqlStreamStore.HAL",
                     "SqlStreamStore.Http"),
-                project => Run("dotnet", $"pack src/{project}/{project}.csproj -c Release -o ../../../{ArtifactsDir} --no-build"));
+                project => Run("dotnet", $"pack src/{project}/{project}.csproj -c Release -o {ArtifactsDir} --no-build"));
 
-            Target(Publish, DependsOn(Pack), () =>
-            {
-                var packagesToPush = Directory.GetFiles($"../{ArtifactsDir}", "*.nupkg", SearchOption.TopDirectoryOnly);
-                Console.WriteLine($"Found packages to publish: {string.Join("; ", packagesToPush)}");
-
-                var apiKey = Environment.GetEnvironmentVariable("FEEDZ_SSS_API_KEY");
-
-                if (string.IsNullOrWhiteSpace(apiKey))
+            Target(Publish, 
+                DependsOn(Pack),
+                () =>
                 {
-                    Console.WriteLine("Feedz API key not available. Packages will not be pushed.");
-                    return;
-                }
+                    var packagesToPush = Directory.GetFiles($"../{ArtifactsDir}", "*.nupkg", SearchOption.TopDirectoryOnly);
+                    Console.WriteLine($"Found packages to publish: {string.Join("; ", packagesToPush)}");
 
-                foreach (var packageToPush in packagesToPush)
-                {
-                    Run("dotnet", $"nuget push {packageToPush} -s https://f.feedz.io/logicality/streamstore-ci/nuget/index.json -k {apiKey} --skip-duplicate", noEcho: true);
-                }
-            });
+                    var apiKey = Environment.GetEnvironmentVariable("FEEDZ_SSS_API_KEY");
+
+                    if (string.IsNullOrWhiteSpace(apiKey))
+                    {
+                        Console.WriteLine("Feedz API key not available. Packages will not be pushed.");
+                        return;
+                    }
+
+                    foreach (var packageToPush in packagesToPush)
+                    {
+                        Run("dotnet", $"nuget push {packageToPush} -s https://f.feedz.io/logicality/streamstore-ci/nuget/index.json -k {apiKey} --skip-duplicate", noEcho: true);
+                    }
+                });
 
             Target(BuildHalDocs, () =>
             {
@@ -97,7 +124,7 @@ namespace build
             });
 
             Target("default",
-                DependsOn(Test, Publish),
+                DependsOn(Clean, Test, Publish),
                 () =>
                 {
                     if (s_oneOrMoreTestsFailed)
