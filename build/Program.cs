@@ -19,25 +19,6 @@ namespace build
 
         private static void Main(string[] args)
         {
-            Target(BuildHalDocs, () =>
-            {
-                Run("yarn", workingDirectory: "./tools/hal-docs");
-
-                var srcDirectory = new DirectoryInfo("./src");
-
-                var schemaDirectories = srcDirectory.GetFiles("*.schema.json", SearchOption.AllDirectories)
-                    .Select(schemaFile => schemaFile.DirectoryName)
-                    .Distinct()
-                    .Select(schemaDirectory => schemaDirectory.Replace(Path.DirectorySeparatorChar, '/'));
-
-                foreach (var schemaDirectory in schemaDirectories)
-                {
-                    Run("node",
-                    $"node_modules/@adobe/jsonschema2md/cli.js -n --input {schemaDirectory} --out {schemaDirectory} --schema-out=-",
-                    "tools/hal-docs");
-                }
-            });
-
             Target(Build, () => Run("dotnet", "build --configuration=Release"));
 
             Target(
@@ -93,6 +74,25 @@ namespace build
                 foreach (var packageToPush in packagesToPush)
                 {
                     Run("dotnet", $"nuget push {packageToPush} -s https://f.feedz.io/logicality/streamstore-ci/nuget/index.json -k {apiKey} --skip-duplicate", noEcho: true);
+                }
+            });
+
+            Target(BuildHalDocs, () =>
+            {
+                Run("yarn", workingDirectory: "./tools/hal-docs");
+
+                var srcDirectory = new DirectoryInfo("./src");
+
+                var schemaDirectories = srcDirectory.GetFiles("*.schema.json", SearchOption.AllDirectories)
+                    .Select(schemaFile => schemaFile.DirectoryName)
+                    .Distinct()
+                    .Select(schemaDirectory => schemaDirectory.Replace(Path.DirectorySeparatorChar, '/'));
+
+                foreach (var schemaDirectory in schemaDirectories)
+                {
+                    Run("node",
+                        $"node_modules/@adobe/jsonschema2md/cli.js -n --input {schemaDirectory} --out {schemaDirectory} --schema-out=-",
+                        "tools/hal-docs");
                 }
             });
 
