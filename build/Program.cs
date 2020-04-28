@@ -50,13 +50,14 @@ namespace build
                     "SqlStreamStore.MySql.Tests",
                     "SqlStreamStore.Postgres.Tests",
                     "SqlStreamStore.HAL.Tests",
-                    "SqlStreamStore.Http.Tests"), 
+                    "SqlStreamStore.Http.Tests"),
                 project =>
                 {
                     try
                     {
                         Run("dotnet",
-                            $"test tests/{project}/{project}.csproj --configuration=Release --no-build --no-restore --verbosity=normal");
+                            $"test tests/{project}/{project}.csproj --configuration=Release --no-build --no-restore --verbosity=normal"
+                            + $" --logger \"trx;logfilename=..\\..\\..\\{ArtifactsDir}\\{project}.trx\"");
                     }
                     catch (NonZeroExitCodeException)
                     {
