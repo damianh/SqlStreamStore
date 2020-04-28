@@ -78,7 +78,7 @@ namespace SqlStreamStore
                         command.ExecuteNonQuery();
                     }
 
-                    commandText = $"DBCC CHECKIDENT ('[{schema}].[Streams]', RESEED, 0);";
+                    commandText = $"DBCC CHECKIDENT ('[{schema}].[Streams]', RESEED, -1);";
                     using (var command = new SqlCommand(commandText, connection))
                     {
                         command.ExecuteNonQuery();

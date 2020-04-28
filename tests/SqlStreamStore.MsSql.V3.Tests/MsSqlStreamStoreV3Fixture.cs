@@ -69,32 +69,32 @@
             { 
                 using (var connection = new SqlConnection(_settings.ConnectionString))
                 {
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     var schema = _settings.Schema;
 
                     var commandText = $"DELETE FROM [{schema}].[Messages]";
                     using(var command = new SqlCommand(commandText, connection))
                     {
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync();
                     }
 
                     commandText = $"DELETE FROM [{schema}].[Streams]";
                     using(var command = new SqlCommand(commandText, connection))
                     {
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync();
                     }
 
-                    commandText = $"DBCC CHECKIDENT ('[{schema}].[Streams]', RESEED, 0);";
+                    commandText = $"DBCC CHECKIDENT ('[{schema}].[Streams]', RESEED, -1);";
                     using(var command = new SqlCommand(commandText, connection))
                     {
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync();
                     }
 
                     commandText = $"DBCC CHECKIDENT ('[{schema}].[Messages]', RESEED, -1);";
                     using(var command = new SqlCommand(commandText, connection))
                     {
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync();
                     }
                 }
             }
