@@ -14,7 +14,8 @@
         private const string ContainerName = "sql-stream-store-tests-mssql";
         private const string Password = "!Passw0rd";
         private const string Image = "microsoft/mssql-server-linux:2017-CU9";
-        private const int Port = 11433;
+        private const int HostPort = 11433;
+        private const int ContainerPort = 1433;
 
         public SqlServerContainer(string databaseName)
         {
@@ -27,8 +28,8 @@
                 .KeepRunning()
                 .ReuseIfExists()
                 .WithEnvironment("ACCEPT_EULA=Y", $"SA_PASSWORD={Password}")
-                .ExposePort(Port, Port)
-                .WaitForPort($"{Port}/tcp", 5000, "127.0.0.1")
+                .ExposePort(HostPort, ContainerPort)
+                .WaitForPort($"{ContainerPort}/tcp", 10000, "127.0.0.1")
                 .Build();
 
             containerService.Start();
@@ -38,7 +39,7 @@
             => new SqlConnection(CreateConnectionStringBuilder().ConnectionString);
 
         public SqlConnectionStringBuilder CreateConnectionStringBuilder()
-            => new SqlConnectionStringBuilder($"server=localhost,{Port};User Id=sa;Password={Password};Initial Catalog=master");
+            => new SqlConnectionStringBuilder($"server=localhost,{HostPort};User Id=sa;Password={Password};Initial Catalog=master");
 
         public async Task CreateDatabase(CancellationToken cancellationToken = default)
         {
