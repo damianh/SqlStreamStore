@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1.201-alpine3.11 AS build
 
-RUN apk add git
+RUN apk add git docker
 
 WORKDIR /repo
 
