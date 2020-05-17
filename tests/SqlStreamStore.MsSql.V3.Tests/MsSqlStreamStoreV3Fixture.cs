@@ -1,7 +1,6 @@
 ﻿namespace SqlStreamStore
 {
     using System;
-    using System.Threading;
     using System.Threading.Tasks;
     using SqlStreamStore.Infrastructure;
     using SqlStreamStore.TestUtils.MsSql;
@@ -13,7 +12,7 @@
 
         public MsSqlStreamStoreV3Fixture(
             string schema,
-            DockerMsSqlServerDatabase dockerInstance,
+            SqlServerContainer dockerInstance,
             string databaseName,
             Action onDispose)
         {

@@ -23,7 +23,7 @@
             if (!fixturePool.TryDequeue(out var fixture))
             {
                 var databaseName = $"test_{Guid.NewGuid():n}";
-                var dockerInstance = new PostgresDockerDatabaseManager(outputHelper, databaseName);
+                var dockerInstance = new PostgresContainer(databaseName);
                 await dockerInstance.CreateDatabase();
 
                 fixture = new PostgresStreamStoreFixture(

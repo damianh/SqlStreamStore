@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Docker.DotNet" Version="3.125.2" />
+    <PackageReference Include="Ductus.FluentDocker" Version="2.7.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="MySqlConnector" Version="0.61.0" />
     <PackageReference Include="Npgsql" Version="4.1.2" />

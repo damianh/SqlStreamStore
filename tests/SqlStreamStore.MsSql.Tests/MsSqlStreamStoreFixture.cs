@@ -12,7 +12,7 @@ namespace SqlStreamStore
 
         public MsSqlStreamStoreFixture(
             string schema,
-            DockerMsSqlServerDatabase dockerInstance,
+            SqlServerContainer dockerInstance,
             string databaseName,
             Action onDispose)
         {

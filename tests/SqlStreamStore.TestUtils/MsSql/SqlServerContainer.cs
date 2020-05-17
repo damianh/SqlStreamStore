@@ -1,40 +1,37 @@
 ﻿namespace SqlStreamStore.TestUtils.MsSql
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using Ductus.FluentDocker.Builders;
     using Microsoft.Data.SqlClient;
     using Polly;
     using SqlStreamStore.Infrastructure;
 
-    public class DockerMsSqlServerDatabase
+    public class SqlServerContainer
     {
         private readonly string _databaseName;
-        private readonly DockerContainer _sqlServerContainer;
+        private const string ContainerName = "sql-stream-store-tests-mssql";
         private const string Password = "!Passw0rd";
-        private const string Image = "microsoft/mssql-server-linux";
-        private const string Tag = "2017-CU9";
+        private const string Image = "microsoft/mssql-server-linux:2017-CU9";
         private const int Port = 11433;
 
-        public DockerMsSqlServerDatabase(string databaseName)
+        public SqlServerContainer(string databaseName)
         {
             _databaseName = databaseName;
+            
+            var containerService = new Builder()
+                .UseContainer()
+                .WithName(ContainerName)
+                .UseImage(Image)
+                .KeepRunning()
+                .ReuseIfExists()
+                .WithEnvironment("ACCEPT_EULA=Y", $"SA_PASSWORD={Password}")
+                .ExposePort(Port, Port)
+                .WaitForPort($"{Port}/tcp", 5000, "127.0.0.1")
+                .Build();
 
-            var ports = new Dictionary<int, int>
-            {
-                { 1433, Port }
-            };
-
-            _sqlServerContainer = new DockerContainer(
-                Image,
-                Tag,
-                HealthCheck,
-                ports)
-            {
-                ContainerName = "sql-stream-store-tests-mssql",
-                Env = new[] { "ACCEPT_EULA=Y", $"SA_PASSWORD={Password}" }
-            };
+            containerService.Start();
         }
 
         public SqlConnection CreateConnection()
@@ -45,8 +42,6 @@
 
         public async Task CreateDatabase(CancellationToken cancellationToken = default)
         {
-            await _sqlServerContainer.TryStart(cancellationToken).WithTimeout(3 * 60 * 1000);
-
             var policy = Policy
                 .Handle<SqlException>()
                 .WaitAndRetryAsync(3, i => TimeSpan.FromSeconds(1));
@@ -68,22 +63,6 @@ ALTER DATABASE [{_databaseName}] SET MULTI_USER";
                     }
                 }
             });
-        }
-
-        private async Task<bool> HealthCheck(CancellationToken cancellationToken)
-        {
-            try
-            {
-                using (var connection = CreateConnection())
-                {
-                    await connection.OpenAsync(cancellationToken).NotOnCapturedContext();
-
-                    return true;
-                }
-            }
-            catch (Exception) { }
-
-            return false;
         }
     }
 }

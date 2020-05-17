@@ -23,7 +23,7 @@
             if (!fixturePool.TryDequeue(out var fixture))
             {
                 var databaseName = $"sss-v2-{Guid.NewGuid():N}";
-                var dockerInstance = new DockerMsSqlServerDatabase(databaseName);
+                var dockerInstance = new SqlServerContainer(databaseName);
                 await dockerInstance.CreateDatabase();
 
                 fixture = new MsSqlStreamStoreFixture(
