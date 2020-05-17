@@ -22,8 +22,7 @@
 
             if (!fixturePool.TryDequeue(out var fixture))
             {
-                var dbUniqueName = (DateTime.UtcNow - DateTime.UnixEpoch).TotalMilliseconds;
-                var databaseName = $"sss-v3-{dbUniqueName}";
+                var databaseName = $"sss-v3-{Guid.NewGuid():N}";
                 var dockerInstance = new DockerMsSqlServerDatabase(databaseName);
                 await dockerInstance.CreateDatabase();
 
