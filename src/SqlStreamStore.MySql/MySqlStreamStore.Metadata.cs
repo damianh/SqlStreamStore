@@ -78,7 +78,7 @@ namespace SqlStreamStore
             try
             {
                 using(var connection = await OpenConnection(cancellationToken))
-                using(var transaction = connection.BeginTransaction())
+                using(var transaction = await connection.BeginTransactionAsync(cancellationToken))
                 using(var command = BuildStoredProcedureCall(
                     _schema.SetStreamMetadata,
                     transaction,
@@ -100,7 +100,7 @@ namespace SqlStreamStore
                 {
                     await command.ExecuteNonQueryAsync(cancellationToken).NotOnCapturedContext();
 
-                    await transaction.CommitAsync(cancellationToken).NotOnCapturedContext();
+                    transaction.Commit();
                 }
 
                 await TryScavenge(streamIdInfo, cancellationToken);

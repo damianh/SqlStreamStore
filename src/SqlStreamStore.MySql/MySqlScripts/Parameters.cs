@@ -81,7 +81,7 @@ namespace SqlStreamStore.MySqlScripts
         public static MySqlParameter ReadDirection(ReadDirection readDirection)
             => new MySqlParameter
             {
-                MySqlDbType = MySqlDbType.Bool,
+                MySqlDbType = MySqlDbType.Bit,
                 Value = readDirection == Streams.ReadDirection.Forward,
                 ParameterName = "_forwards"
             };
@@ -89,7 +89,7 @@ namespace SqlStreamStore.MySqlScripts
         public static MySqlParameter Prefetch(bool prefetch)
             => new MySqlParameter
             {
-                MySqlDbType = MySqlDbType.Bool,
+                MySqlDbType = MySqlDbType.Bit,
                 Value = prefetch,
                 ParameterName = "_prefetch"
             };
@@ -195,7 +195,7 @@ namespace SqlStreamStore.MySqlScripts
         public static MySqlParameter MessageExists()
             => new MySqlParameter
             {
-                MySqlDbType = MySqlDbType.Bool,
+                MySqlDbType = MySqlDbType.Bit,
                 ParameterName = "_message_exists",
                 Direction = ParameterDirection.Output
             };
@@ -203,7 +203,7 @@ namespace SqlStreamStore.MySqlScripts
         public static MySqlParameter DeletionTrackingDisabled(bool value)
             => new MySqlParameter
             {
-                MySqlDbType = MySqlDbType.Bool,
+                MySqlDbType = MySqlDbType.Bit,
                 ParameterName = "_deletion_tracking_disabled",
                 Value = value
             };
@@ -212,7 +212,7 @@ namespace SqlStreamStore.MySqlScripts
             => new MySqlParameter
             {
                 ParameterName = parameter.ParameterName,
-                MySqlDbType = MySqlDbType.Null,
+                MySqlDbType = MySqlDbType.Bit, //MySqlDbType.Null
                 Value = DBNull.Value
             };
 

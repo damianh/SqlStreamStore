@@ -60,14 +60,14 @@
             GuardAgainstDisposed();
 
             using(var connection = await OpenConnection(cancellationToken))
-            using(var transaction = connection.BeginTransaction())
+            using(var transaction = await connection.BeginTransactionAsync(cancellationToken))
             {
                 using(var command = BuildCommand(_schema.Definition, transaction))
                 {
                     await command.ExecuteNonQueryAsync(cancellationToken).NotOnCapturedContext();
                 }
 
-                await transaction.CommitAsync(cancellationToken).NotOnCapturedContext();
+                transaction.Commit();
             }
         }
 
@@ -90,7 +90,7 @@
                         .ExecuteNonQueryAsync(cancellationToken)
                         .NotOnCapturedContext();
 
-                    await transaction.CommitAsync(cancellationToken).NotOnCapturedContext();
+                    transaction.Commit();
                 }
             }
         }
@@ -178,7 +178,7 @@
                         await DeleteEventInternal(streamId, deletedMessageId, transaction, cancellationToken);
                     }
 
-                    await transaction.CommitAsync(cancellationToken).NotOnCapturedContext();
+                    transaction.Commit();
 
                     return deletedMessageIds.Count;
                 }

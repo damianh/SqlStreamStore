@@ -23,7 +23,7 @@ namespace SqlStreamStore
 
             _connectionStringBuilder = new MySqlConnectionStringBuilder(connectionString)
             {
-                GuidFormat = MySqlGuidFormat.Binary16,
+                //GuidFormat = MySqlGuidFormat.Binary16,
                 ConnectionReset = true,
                 UseCompression = true
             };

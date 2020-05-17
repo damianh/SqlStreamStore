@@ -18,7 +18,7 @@ namespace SqlStreamStore
             var streamIdInfo = new StreamIdInfo(streamId);
 
             using(var connection = await OpenConnection(cancellationToken))
-            using(var transaction = connection.BeginTransaction())
+            using(var transaction = await connection.BeginTransactionAsync(cancellationToken))
             {
                 await DeleteStreamInternal(
                     streamIdInfo.MySqlStreamId,
@@ -32,7 +32,7 @@ namespace SqlStreamStore
                     transaction,
                     cancellationToken);
 
-                await transaction.CommitAsync(cancellationToken).NotOnCapturedContext();
+                transaction.Commit();
             }
         }
 
@@ -75,7 +75,7 @@ namespace SqlStreamStore
                 }
                 catch(MySqlException ex) when(ex.IsWrongExpectedVersion())
                 {
-                    await transaction.RollbackAsync(cancellationToken).NotOnCapturedContext();
+                    transaction.Rollback();
 
                     throw new WrongExpectedVersionException(
                         ErrorMessages.DeleteStreamFailedWrongExpectedVersion(streamId.IdOriginal, expectedVersion),
@@ -94,11 +94,11 @@ namespace SqlStreamStore
             var streamIdInfo = new StreamIdInfo(streamId);
 
             using(var connection = await OpenConnection(cancellationToken))
-            using(var transaction = connection.BeginTransaction())
+            using (var transaction = await connection.BeginTransactionAsync(cancellationToken))
             {
                 await DeleteEventInternal(streamIdInfo, eventId, transaction, cancellationToken);
 
-                await transaction.CommitAsync(cancellationToken).NotOnCapturedContext();
+                transaction.Commit();
             }
         }
 

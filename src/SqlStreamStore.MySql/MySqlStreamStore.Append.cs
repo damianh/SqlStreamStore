@@ -119,7 +119,7 @@ namespace SqlStreamStore
                     }
                 }
 
-                await transaction.CommitAsync(cancellationToken).NotOnCapturedContext();
+                transaction.Commit();
             }
 
             await TryScavenge(streamId, cancellationToken).NotOnCapturedContext();
@@ -295,7 +295,7 @@ namespace SqlStreamStore
                 currentVersion,
                 currentPosition))
             {
-                await command.PrepareAsync(cancellationToken).NotOnCapturedContext();
+                command.Prepare();
                 var nextExpectedVersion = Convert.ToInt32(
                     await command
                         .ExecuteScalarAsync(cancellationToken)
@@ -335,7 +335,7 @@ namespace SqlStreamStore
 
                 reader.Close();
 
-                await transaction.CommitAsync(cancellationToken).NotOnCapturedContext();
+                transaction.Commit();
             }
 
             return appendResult;
