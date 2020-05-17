@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using SimpleExec;
@@ -23,7 +24,7 @@ namespace build
         private const string TestHttp = "test-http";
         private const string Pack = "pack";
         private const string Publish = "publish";
-        private static bool s_oneOrMoreTestsFailed;
+        private static List<string> TestProjectsWithFailures = new List<string>();
 
         private static void Main(string[] args)
         {
@@ -55,9 +56,16 @@ namespace build
 
             void RunTest(string project)
             {
-                Run("dotnet",
-                    $"test tests/{project}/{project}.csproj --configuration=Release --no-build --no-restore --verbosity=normal"
-                    + $" --logger \"trx;logfilename=..\\..\\..\\{ArtifactsDir}\\{project}.trx\"");
+                try
+                {
+                    Run("dotnet",
+                        $"test tests/{project}/{project}.csproj --configuration=Release --no-build --no-restore --verbosity=normal"
+                        + $" --logger \"trx;logfilename=..\\..\\..\\{ArtifactsDir}\\{project}.trx\"");
+                }
+                catch (NonZeroExitCodeException)
+                {
+
+                }
             }
 
             Target(
@@ -155,9 +163,10 @@ namespace build
                 DependsOn(Clean, TestAll, Publish),
                 () =>
                 {
-                    if (s_oneOrMoreTestsFailed)
+                    if (TestProjectsWithFailures.Any())
                     {
-                        throw new Exception("One or more tests failed.");
+                        var projects = string.Join(", ", TestProjectsWithFailures);
+                        throw new Exception($"One or more tests failed in the following projects: {projects}");
                     }
                 });
 
