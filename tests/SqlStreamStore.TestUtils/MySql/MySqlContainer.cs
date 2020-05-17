@@ -26,7 +26,7 @@ namespace SqlStreamStore.TestUtils.MySql
                 .ReuseIfExists()
                 .WithEnvironment("MYSQL_ALLOW_EMPTY_PASSWORD=1")
                 .ExposePort(Port, Port)
-                .WaitForPort($"{Port}/tcp", 5000, "127.0.0.1")
+                .WaitForPort($"{Port}/tcp", 15000, "127.0.0.1")
                 .Build();
 
             containerService.Start();
